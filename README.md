@@ -22,7 +22,7 @@ This project was developed as part of a school assignment by a team of four.  Th
 ## Technologies Used
 
 - **Languages:** C++
-- **Libraries** SFML
+- **Libraries:** SFML, Lib curl
 
 ## Installation and Setup
 
