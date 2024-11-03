@@ -150,10 +150,12 @@
     <Font Include="ARIAL.TTF" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChartDisplay.cpp" />
     <ClCompile Include="LoginPage.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ChartDisplay.h" />
     <ClInclude Include="LoginPage.h" />
     <ClInclude Include="UserDetails.h" />
   </ItemGroup>

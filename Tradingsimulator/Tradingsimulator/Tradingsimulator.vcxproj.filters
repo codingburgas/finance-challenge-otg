@@ -26,12 +26,18 @@
     <ClCompile Include="LoginPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ChartDisplay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoginPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UserDetails.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChartDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

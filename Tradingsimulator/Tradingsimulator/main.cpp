@@ -4,16 +4,14 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <random>
-#include <chrono>
 #include <iostream>
 #include <cmath>
 #include <curl/curl.h>
 #include "LoginPage.h"
 #include "UserDetails.h"
+#include "ChartDisplay.h"
 
 enum class PageState { Login, StartMenu, TradePage };
-enum class Timeframe { FifteenMin, OneHour, OneDay };
 
 bool isMouseOver(const sf::RectangleShape& box, const sf::Vector2i& mousePos) {
     return box.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
@@ -75,9 +73,31 @@ int main() {
     bool isLoggedIn = false;
     bool isRegistered = false;
 
+    // Create ChartDisplay instances for each cryptocurrency
+    ChartDisplay bitcoinChart(980, 600);
+    bitcoinChart.setPosition(400, 100); // Position for Bitcoin
+    bitcoinChart.updateData({ 30000, 30500, 29500, 31000, 32000, 31500, 32500 }); // Bitcoin data
+
+    ChartDisplay ethereumChart(980, 600);
+    ethereumChart.setPosition(400, 320); // Position for Ethereum
+    ethereumChart.updateData({ 2000, 2100, 1950, 2200, 2250, 2150, 2300 }); // Ethereum data
+
+    ChartDisplay binanceCoinChart(980, 600);
+    binanceCoinChart.setPosition(400, 540); // Position for Binance Coin
+    binanceCoinChart.updateData({ 300, 310, 290, 320, 330, 325, 340 }); // Binance Coin data
+
+    ChartDisplay cardanoChart(980, 600);
+    cardanoChart.setPosition(800, 100); // Position for Cardano
+    cardanoChart.updateData({ 0.50, 0.52, 0.48, 0.55, 0.56, 0.54, 0.58 }); // Cardano data
+
+    ChartDisplay solanaChart(980, 600);
+    solanaChart.setPosition(800, 320); // Position for Solana
+    solanaChart.updateData({ 30, 32, 28, 35, 37, 34, 38 }); // Solana data
+
+    int currentChartIndex = 0; // 0 = Bitcoin, 1 = Ethereum, 2 = Binance Coin, 3 = Cardano, 4 = Solana
+
     float balance = 1000.0f;
     PageState simulatorPage = PageState::StartMenu;
-    Timeframe currentTimeframe = Timeframe::FifteenMin;
     std::vector<std::string> cryptocurrencies = { "bitcoin", "ethereum", "binancecoin", "cardano", "solana" };
     std::vector<float> marketCaps = { 500, 300, 80, 40, 20 }; // in billions
     std::vector<float> dailyChanges = { -2.3, 1.4, 0.8, -1.2, 0.5 };
@@ -86,8 +106,8 @@ int main() {
     // To hold open positions
     struct Position {
         std::string crypto;
-        float amount; // Amount invested or gained from shorting
-        float entryPrice; // Entry price for calculating P/L
+        float amount;
+        float entryPrice;
         float leverage;
         float profitLoss;
     };
@@ -223,6 +243,14 @@ int main() {
                 }
             }
             else if (currentPage == PageState::TradePage) {
+                if (event.type == sf::Event::KeyPressed) {
+                    if (event.key.code == sf::Keyboard::Right) {
+                        currentChartIndex = (currentChartIndex + 1) % 5; // Cycle through 0-4
+                    }
+                    else if (event.key.code == sf::Keyboard::Left) {
+                        currentChartIndex = (currentChartIndex + 4) % 5; // Cycle backwards
+                    }
+                }
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
@@ -349,6 +377,13 @@ int main() {
             window.draw(positionSummaryText);
             window.draw(backButton);
             window.draw(backButtonText);
+            switch (currentChartIndex) {
+            case 0: bitcoinChart.draw(window); break;  // Bitcoin
+            case 1: ethereumChart.draw(window); break; // Ethereum
+            case 2: binanceCoinChart.draw(window); break; // Binance Coin
+            case 3: cardanoChart.draw(window); break; // Cardano
+            case 4: solanaChart.draw(window); break; // Solana
+            }
 
             sf::Text moneyInputDisplay(moneyInput, font, 20);
             moneyInputDisplay.setFillColor(sf::Color::Black);
