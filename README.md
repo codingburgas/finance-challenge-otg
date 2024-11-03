@@ -1,6 +1,6 @@
 <h1 align="center">OTG</h1>
 <p align="center">
-  <img src="images/OTGlogo.png" alt="Project Logo" width="200"/>
+  <img src="images/OTGLogo.png" alt="Project Logo" width="800"/>
 </p>
 > OTG is a team of young people, passionate about programming and keen on sharing their trading experience through their app.
 
