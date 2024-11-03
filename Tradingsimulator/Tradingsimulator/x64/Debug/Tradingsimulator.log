@@ -1,1 +1,31 @@
-﻿  Tradingsimulator.vcxproj -> C:\Users\GRIGS\Documents\finance-challenge-otg\Tradingsimulator\x64\Debug\Tradingsimulator.exe
+﻿  LoginPage.cpp
+  main.cpp
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(27,28): warning C4101: 'e': unreferenced local variable
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,41): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,41): warning C4305:         with
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,41): warning C4305:         [
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,41): warning C4305:             _Ty=float
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,41): warning C4305:         ]
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,47): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,47): warning C4305:         with
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,47): warning C4305:         [
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,47): warning C4305:             _Ty=float
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,47): warning C4305:         ]
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,52): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,52): warning C4305:         with
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,52): warning C4305:         [
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,52): warning C4305:             _Ty=float
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,52): warning C4305:         ]
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,57): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,57): warning C4305:         with
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,57): warning C4305:         [
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,57): warning C4305:             _Ty=float
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(82,57): warning C4305:         ]
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(133,40): warning C4244: 'argument': conversion from 'size_t' to 'float', possible loss of data
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(264,52): warning C4244: 'argument': conversion from 'size_t' to 'float', possible loss of data
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(348,44): warning C4244: 'argument': conversion from 'size_t' to 'float', possible loss of data
+C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\Tradingsimulator\main.cpp(353,42): warning C4244: 'argument': conversion from 'size_t' to 'float', possible loss of data
+  Generating Code...
+  Tradingsimulator.vcxproj -> C:\Users\Pepsi\Documents\OTG\finance-challenge-otg\Tradingsimulator\x64\Debug\Tradingsimulator.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

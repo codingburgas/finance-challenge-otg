@@ -5,9 +5,11 @@
 #include <iomanip>
 #include <random>
 #include <chrono>
+#include <iostream>
+#include <cmath>
+#include <curl/curl.h>
 #include "LoginPage.h"
 #include "UserDetails.h"
-#include <iostream>
 
 enum class PageState { Login, StartMenu, TradePage };
 enum class Timeframe { FifteenMin, OneHour, OneDay };
@@ -16,8 +18,54 @@ bool isMouseOver(const sf::RectangleShape& box, const sf::Vector2i& mousePos) {
     return box.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
 }
 
+// Helper function for handling data from libcurl
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* s) {
+    size_t newLength = size * nmemb;
+    try {
+        s->append((char*)contents, newLength);
+    }
+    catch (std::bad_alloc& e) {
+        return 0;
+    }
+    return newLength;
+}
+
+// Fetch real-time price from CoinGecko using libcurl
+float getCurrentPrice(const std::string& crypto) {
+    CURL* curl;
+    CURLcode res;
+    std::string readBuffer;
+
+    std::string url = "https://api.coingecko.com/api/v3/simple/price?ids=" + crypto + "&vs_currencies=usd";
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+    }
+    curl_global_cleanup();
+
+    if (res != CURLE_OK) {
+        std::cerr << "Error: Unable to fetch price from CoinGecko. Falling back to default price.\n";
+        return 100.0f;  // Default price if fetching fails
+    }
+
+    // Parse the JSON response to extract price
+    size_t pos = readBuffer.find("\"usd\":");
+    if (pos != std::string::npos) {
+        std::string priceStr = readBuffer.substr(pos + 6);
+        priceStr = priceStr.substr(0, priceStr.find_first_of("}"));
+        return std::stof(priceStr);
+    }
+    return 100.0f; // Default price if parsing fails
+}
+
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1400, 900), "Trading Simulator");
+    sf::RenderWindow window(sf::VideoMode(1400, 900), "Crypto Trading Simulator");
     window.setFramerateLimit(60);
 
     // Initialize Login UI and page states
@@ -29,10 +77,20 @@ int main() {
     float balance = 1000.0f;
     PageState simulatorPage = PageState::StartMenu;
     Timeframe currentTimeframe = Timeframe::FifteenMin;
-    std::vector<std::string> stocks = { "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA" };
-    std::vector<float> marketCaps = { 2500, 2000, 1500, 1800, 1000 };
-    std::vector<float> dailyChanges = { -1.25, 0.56, 1.8, -0.45, 0.9 };
-    std::string selectedStock = "";
+    std::vector<std::string> cryptocurrencies = { "bitcoin", "ethereum", "binancecoin", "cardano", "solana" };
+    std::vector<float> marketCaps = { 500, 300, 80, 40, 20 }; // in billions
+    std::vector<float> dailyChanges = { -2.3, 1.4, 0.8, -1.2, 0.5 };
+    std::string selectedCrypto = "";
+
+    // To hold open positions
+    struct Position {
+        std::string crypto;
+        float amount; // Amount invested or gained from shorting
+        float entryPrice; // Entry price for calculating P/L
+        float leverage;
+        float profitLoss;
+    };
+    std::vector<Position> openPositions;
 
     // Load font for UI elements
     sf::Font font;
@@ -59,52 +117,73 @@ int main() {
     restartText.setFillColor(sf::Color::White);
     restartText.setPosition(1270, 25);
 
-    // Stock Table Display
-    sf::RectangleShape stockTable(sf::Vector2f(1380, 600));
-    stockTable.setFillColor(sf::Color(40, 40, 40));
-    stockTable.setPosition(10, 100);
+    // Crypto Table Display
+    sf::RectangleShape cryptoTable(sf::Vector2f(1380, 600));
+    cryptoTable.setFillColor(sf::Color(40, 40, 40));
+    cryptoTable.setPosition(10, 100);
 
-    sf::Text stockHeaderText("Stock     Market Cap (B)     Daily Change (%)", font, 28);
-    stockHeaderText.setFillColor(sf::Color::White);
-    stockHeaderText.setPosition(20, 120);
+    sf::Text cryptoHeaderText("Crypto     Market Cap (B)     Daily Change (%)", font, 28);
+    cryptoHeaderText.setFillColor(sf::Color::White);
+    cryptoHeaderText.setPosition(20, 120);
 
-    std::vector<sf::Text> stockTexts;
-    for (size_t i = 0; i < stocks.size(); ++i) {
-        sf::Text stockText("", font, 24);
-        stockText.setFillColor(dailyChanges[i] >= 0 ? sf::Color::Green : sf::Color::Red);
-        stockText.setPosition(20, 180 + i * 50);
-        stockTexts.push_back(stockText);
+    std::vector<sf::Text> cryptoTexts;
+    for (size_t i = 0; i < cryptocurrencies.size(); ++i) {
+        sf::Text cryptoText("", font, 24);
+        cryptoText.setFillColor(dailyChanges[i] >= 0 ? sf::Color::Green : sf::Color::Red);
+        cryptoText.setPosition(20, 180 + i * 50);
+        cryptoTexts.push_back(cryptoText);
     }
 
-    // Trade Panel
+    // Trading Panel Variables
     sf::RectangleShape tradePanel(sf::Vector2f(380, 600));
     tradePanel.setFillColor(sf::Color(60, 60, 60));
     tradePanel.setPosition(10, 100);
 
-    sf::Text tradePanelText("Trade Panel\nBuy/Long | Sell/Short\nLeverage (1-100)\nTP & SL", font, 20);
+    sf::Text tradePanelText("Trade " + selectedCrypto, font, 20);
     tradePanelText.setFillColor(sf::Color::White);
     tradePanelText.setPosition(20, 130);
 
-    // Chart Area with Timeframes
-    sf::RectangleShape chartBox(sf::Vector2f(960, 600));
-    chartBox.setFillColor(sf::Color(50, 50, 50));
-    chartBox.setPosition(400, 100);
+    sf::Text moneyInputText("Amount ($):", font, 20);
+    moneyInputText.setFillColor(sf::Color::White);
+    moneyInputText.setPosition(20, 180);
+    sf::RectangleShape moneyInputBox(sf::Vector2f(200, 30));
+    moneyInputBox.setFillColor(sf::Color::White);
+    moneyInputBox.setPosition(20, 210);
+    std::string moneyInput;
 
-    sf::Text timeframeText("Timeframes:\n15 min | 1 hour | 1 day", font, 20);
-    timeframeText.setFillColor(sf::Color::White);
-    timeframeText.setPosition(410, 110);
+    sf::Text leverageInputText("Leverage (1-100):", font, 20);
+    leverageInputText.setFillColor(sf::Color::White);
+    leverageInputText.setPosition(20, 250);
+    sf::RectangleShape leverageInputBox(sf::Vector2f(200, 30));
+    leverageInputBox.setFillColor(sf::Color::White);
+    leverageInputBox.setPosition(20, 280);
+    std::string leverageInput;
 
-    // Position Summary at Bottom
+    // Buy/Sell Buttons
+    sf::RectangleShape buyButton(sf::Vector2f(80, 40));
+    buyButton.setFillColor(sf::Color(70, 180, 70));
+    buyButton.setPosition(20, 320);
+    sf::Text buyButtonText("Long", font, 20);
+    buyButtonText.setFillColor(sf::Color::White);
+    buyButtonText.setPosition(30, 325);
+
+    sf::RectangleShape sellButton(sf::Vector2f(80, 40));
+    sellButton.setFillColor(sf::Color(180, 70, 70));
+    sellButton.setPosition(120, 320);
+    sf::Text sellButtonText("Short", font, 20);
+    sellButtonText.setFillColor(sf::Color::White);
+    sellButtonText.setPosition(130, 325);
+
+    // Position Summary at Bottom with Close Button
     sf::RectangleShape positionSummaryBox(sf::Vector2f(1380, 150));
     positionSummaryBox.setFillColor(sf::Color(30, 30, 30));
     positionSummaryBox.setPosition(10, 710);
 
-    sf::Text positionSummaryText("Position Summary:\n\nOpen Positions\nP&L", font, 20);
+    sf::Text positionSummaryText("Open Positions:", font, 20);
     positionSummaryText.setFillColor(sf::Color::White);
     positionSummaryText.setPosition(20, 720);
 
-    auto lastUpdate = std::chrono::system_clock::now();
-
+    // Main loop
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -123,12 +202,76 @@ int main() {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     if (isMouseOver(restartButton, mousePos)) {
                         balance = 1000.0f;
+                        openPositions.clear();
                         currentPage = PageState::StartMenu;
                     }
-                    for (size_t i = 0; i < stockTexts.size(); ++i) {
-                        if (stockTexts[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
-                            selectedStock = stocks[i];
+                    for (size_t i = 0; i < cryptoTexts.size(); ++i) {
+                        if (cryptoTexts[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
+                            selectedCrypto = cryptocurrencies[i];
                             currentPage = PageState::TradePage;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (currentPage == PageState::TradePage) {
+                if (event.type == sf::Event::TextEntered) {
+                    if (moneyInputBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)))) {
+                        if (event.text.unicode == '\b') {
+                            if (!moneyInput.empty()) moneyInput.pop_back();
+                        }
+                        else if (event.text.unicode < 128) {
+                            moneyInput += static_cast<char>(event.text.unicode);
+                        }
+                    }
+                    else if (leverageInputBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)))) {
+                        if (event.text.unicode == '\b') {
+                            if (!leverageInput.empty()) leverageInput.pop_back();
+                        }
+                        else if (event.text.unicode < 128) {
+                            leverageInput += static_cast<char>(event.text.unicode);
+                        }
+                    }
+                }
+
+                if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    if (isMouseOver(buyButton, mousePos)) {
+                        if (!moneyInput.empty() && !leverageInput.empty()) {
+                            float money = std::stof(moneyInput);
+                            float leverage = std::stof(leverageInput);
+                            if (money <= balance) {
+                                float entryPrice = getCurrentPrice(selectedCrypto);
+                                openPositions.push_back({ selectedCrypto, money, entryPrice, leverage, 0.0f });
+                                balance -= money;
+                            }
+                        }
+                    }
+                    else if (isMouseOver(sellButton, mousePos)) {
+                        if (!moneyInput.empty() && !leverageInput.empty()) {
+                            float money = std::stof(moneyInput);
+                            float leverage = std::stof(leverageInput);
+                            if (money <= balance) {
+                                float entryPrice = getCurrentPrice(selectedCrypto);
+                                openPositions.push_back({ selectedCrypto, -money, entryPrice, leverage, 0.0f });
+                                balance += money;
+                            }
+                        }
+                    }
+
+                    for (size_t i = 0; i < openPositions.size(); ++i) {
+                        sf::RectangleShape closeButton(sf::Vector2f(60, 30));
+                        closeButton.setPosition(20 + i * 160, 800);
+                        if (isMouseOver(closeButton, mousePos)) {
+                            float currentPrice = getCurrentPrice(openPositions[i].crypto);
+                            if (openPositions[i].amount > 0) { // Long Position
+                                openPositions[i].profitLoss = (currentPrice - openPositions[i].entryPrice) * (openPositions[i].amount / openPositions[i].leverage);
+                            }
+                            else { // Short Position
+                                openPositions[i].profitLoss = (openPositions[i].entryPrice - currentPrice) * (-openPositions[i].amount / openPositions[i].leverage);
+                            }
+                            balance += openPositions[i].profitLoss + openPositions[i].amount;
+                            openPositions.erase(openPositions.begin() + i);
                             break;
                         }
                     }
@@ -138,23 +281,22 @@ int main() {
 
         balanceText.setString("Balance: $" + std::to_string(balance));
 
-        auto now = std::chrono::system_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate);
-        if (elapsed.count() >= 5) {
-            std::default_random_engine generator;
-            std::uniform_real_distribution<float> distribution(-2.0f, 2.0f);
-            for (auto& change : dailyChanges) {
-                change += distribution(generator);
-            }
-            lastUpdate = now;
+        std::stringstream positionSummary;
+        positionSummary << "Open Positions:\n";
+        for (size_t i = 0; i < openPositions.size(); ++i) {
+            positionSummary << openPositions[i].crypto << ": $" << std::fixed << std::setprecision(2)
+                << openPositions[i].amount << " (Lev: " << openPositions[i].leverage << ") "
+                << "P/L: $" << openPositions[i].profitLoss << "\n";
         }
+        positionSummaryText.setString(positionSummary.str());
 
-        for (size_t i = 0; i < stocks.size(); ++i) {
-            std::stringstream stockRow;
-            stockRow << stocks[i] << "     $" << std::fixed << std::setprecision(1) << marketCaps[i] << "B"
+        // Update Crypto Table
+        for (size_t i = 0; i < cryptocurrencies.size(); ++i) {
+            std::stringstream cryptoRow;
+            cryptoRow << cryptocurrencies[i] << "     $" << std::fixed << std::setprecision(1) << marketCaps[i] << "B"
                 << "       " << std::fixed << std::setprecision(2) << dailyChanges[i] << "%";
-            stockTexts[i].setString(stockRow.str());
-            stockTexts[i].setFillColor(dailyChanges[i] >= 0 ? sf::Color::Green : sf::Color::Red);
+            cryptoTexts[i].setString(cryptoRow.str());
+            cryptoTexts[i].setFillColor(dailyChanges[i] >= 0 ? sf::Color::Green : sf::Color::Red);
         }
 
         window.clear(sf::Color::Black);
@@ -167,20 +309,50 @@ int main() {
             window.draw(balanceText);
             window.draw(restartButton);
             window.draw(restartText);
-            window.draw(stockTable);
-            window.draw(stockHeaderText);
+            window.draw(cryptoTable);
+            window.draw(cryptoHeaderText);
 
-            for (const auto& stockText : stockTexts) {
-                window.draw(stockText);
+            for (const auto& cryptoText : cryptoTexts) {
+                window.draw(cryptoText);
             }
         }
         else if (currentPage == PageState::TradePage) {
+            tradePanelText.setString("Trade " + selectedCrypto);
             window.draw(tradePanel);
             window.draw(tradePanelText);
-            window.draw(chartBox);
-            window.draw(timeframeText);
+            window.draw(balanceText);
+            window.draw(moneyInputText);
+            window.draw(moneyInputBox);
+            window.draw(leverageInputText);
+            window.draw(leverageInputBox);
+            window.draw(buyButton);
+            window.draw(buyButtonText);
+            window.draw(sellButton);
+            window.draw(sellButtonText);
             window.draw(positionSummaryBox);
             window.draw(positionSummaryText);
+
+            sf::Text moneyInputDisplay(moneyInput, font, 20);
+            moneyInputDisplay.setFillColor(sf::Color::Black);
+            moneyInputDisplay.setPosition(25, 215);
+            window.draw(moneyInputDisplay);
+
+            sf::Text leverageInputDisplay(leverageInput, font, 20);
+            leverageInputDisplay.setFillColor(sf::Color::Black);
+            leverageInputDisplay.setPosition(25, 285);
+            window.draw(leverageInputDisplay);
+
+            for (size_t i = 0; i < openPositions.size(); ++i) {
+                sf::RectangleShape closeButton(sf::Vector2f(60, 30));
+                closeButton.setFillColor(sf::Color(200, 0, 0));
+                closeButton.setPosition(20 + i * 160, 800);
+                window.draw(closeButton);
+
+                sf::Text closeText("Close", font, 20);
+                closeText.setFillColor(sf::Color::White);
+                closeText.setPosition(25 + i * 160, 805);
+                window.draw(closeText);
+            }
         }
 
         window.display();

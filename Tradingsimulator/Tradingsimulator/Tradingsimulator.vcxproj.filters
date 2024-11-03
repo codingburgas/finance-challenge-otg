@@ -23,29 +23,11 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StockData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StockChart.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TradeWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LoginPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StockData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StockChart.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TradeWIndow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LoginPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>

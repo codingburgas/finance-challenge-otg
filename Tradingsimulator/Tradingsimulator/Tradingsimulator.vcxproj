@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\user\OneDrive\Desktop\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\OneDrive\Desktop\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Pepsi\Downloads\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Pepsi\Downloads\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\user\OneDrive\Desktop\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\user\OneDrive\Desktop\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Pepsi\Downloads\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Pepsi\Downloads\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\user\OneDrive\Desktop\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Pepsi\Downloads\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,7 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\user\OneDrive\Desktop\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Pepsi\Downloads\SFML-2.6.1-windows-vc17-64-bit\SFML-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,15 +148,9 @@
   <ItemGroup>
     <ClCompile Include="LoginPage.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="StockChart.cpp" />
-    <ClCompile Include="StockData.cpp" />
-    <ClCompile Include="TradeWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoginPage.h" />
-    <ClInclude Include="StockChart.h" />
-    <ClInclude Include="StockData.h" />
-    <ClInclude Include="TradeWIndow.h" />
     <ClInclude Include="UserDetails.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
