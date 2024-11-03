@@ -1,3 +1,4 @@
+// main.cpp
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
@@ -174,6 +175,13 @@ int main() {
     sellButtonText.setFillColor(sf::Color::White);
     sellButtonText.setPosition(130, 325);
 
+    sf::RectangleShape backButton(sf::Vector2f(80, 40));
+    backButton.setFillColor(sf::Color(80, 80, 80));
+    backButton.setPosition(1300, 20);  // Position it at the top right corner
+    sf::Text backButtonText("Back", font, 20);
+    backButtonText.setFillColor(sf::Color::White);
+    backButtonText.setPosition(1310, 25);
+
     // Position Summary at Bottom with Close Button
     sf::RectangleShape positionSummaryBox(sf::Vector2f(1380, 150));
     positionSummaryBox.setFillColor(sf::Color(30, 30, 30));
@@ -215,6 +223,14 @@ int main() {
                 }
             }
             else if (currentPage == PageState::TradePage) {
+                if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+                    // Check for the Back button click
+                    if (isMouseOver(backButton, mousePos)) {
+                        currentPage = PageState::StartMenu; // Return to the main page
+                    }
+                }
                 if (event.type == sf::Event::TextEntered) {
                     if (moneyInputBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)))) {
                         if (event.text.unicode == '\b') {
@@ -331,6 +347,8 @@ int main() {
             window.draw(sellButtonText);
             window.draw(positionSummaryBox);
             window.draw(positionSummaryText);
+            window.draw(backButton);
+            window.draw(backButtonText);
 
             sf::Text moneyInputDisplay(moneyInput, font, 20);
             moneyInputDisplay.setFillColor(sf::Color::Black);
