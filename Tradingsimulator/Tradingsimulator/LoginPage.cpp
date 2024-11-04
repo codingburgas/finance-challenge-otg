@@ -6,53 +6,100 @@ using namespace std;
 
 LoginUI::LoginUI(sf::RenderWindow& window)
     : window(window), usernameFocus(false), passwordFocus(false), registerMode(false) {
-    font.loadFromFile("Arial.ttf");
+
+    // Load font
+    if (!font.loadFromFile("Arial.ttf")) {
+        std::cerr << "Error loading font." << std::endl;
+    }
+
+    // Load background texture and set it to the sprite
+    if (!backgroundTexture.loadFromFile("C:/Users/milko/source/repos/finance-challenge-otg/images/Background.png")) {
+        std::cerr << "Error loading background image." << std::endl;
+    }
+    // Get the size of the window
+    sf::Vector2u windowSize = window.getSize();
+
+    // Get the size of the background image
+    sf::Vector2u textureSize = backgroundTexture.getSize();
+
+    // Scale the background to fit the window size
+    float scaleX = static_cast<float>(windowSize.x) / textureSize.x;
+    float scaleY = static_cast<float>(windowSize.y) / textureSize.y;
+    backgroundSprite.setScale(scaleX, scaleY);
+    backgroundSprite.setTexture(backgroundTexture);
 
     // Username field setup
     usernameField.setSize(sf::Vector2f(300, 50));
-    usernameField.setPosition(550, 300);
+    usernameField.setPosition((windowSize.x - 300) / 2, windowSize.y / 2 - 75); // Centered horizontally
     usernameField.setFillColor(sf::Color::White);
+    usernameField.setOutlineThickness(3);
+    usernameField.setOutlineColor(sf::Color(200, 200, 200, 180));
+
     usernameText.setFont(font);
-    usernameText.setCharacterSize(24);
-    usernameText.setFillColor(sf::Color::Black);
-    usernameText.setPosition(555, 305);
+    usernameText.setCharacterSize(26);
+    usernameText.setFillColor(sf::Color(150, 150, 150)); // Light color for placeholder
+    usernameText.setString("Username");  // Placeholder text
+    usernameText.setPosition((windowSize.x - 300) / 2 + 5, windowSize.y / 2 - 70);
 
     // Password field setup
     passwordField.setSize(sf::Vector2f(300, 50));
-    passwordField.setPosition(550, 400);
+    passwordField.setPosition((windowSize.x - 300) / 2, windowSize.y / 2); // Centered horizontally
     passwordField.setFillColor(sf::Color::White);
+    passwordField.setOutlineThickness(3);
+    passwordField.setOutlineColor(sf::Color(200, 200, 200, 180));
+
     passwordText.setFont(font);
-    passwordText.setCharacterSize(24);
-    passwordText.setFillColor(sf::Color::Black);
-    passwordText.setPosition(555, 405);
+    passwordText.setCharacterSize(26);
+    passwordText.setFillColor(sf::Color(150, 150, 150)); // Light color for placeholder
+    passwordText.setString("Password");  // Placeholder text
+    passwordText.setPosition((windowSize.x - 300) / 2 + 5, windowSize.y / 2 + 5);
 
     // Login button setup
-    loginButton.setSize(sf::Vector2f(100, 50));
-    loginButton.setPosition(550, 500);
+    loginButton.setSize(sf::Vector2f(150, 50));
+    loginButton.setPosition((windowSize.x - 100) / 2 - 110, windowSize.y / 2 + 100);
     loginButton.setFillColor(sf::Color(70, 130, 180));
     loginButtonText.setFont(font);
     loginButtonText.setString("Login");
     loginButtonText.setCharacterSize(24);
     loginButtonText.setFillColor(sf::Color::White);
-    loginButtonText.setPosition(565, 510);
+    loginButtonText.setPosition((windowSize.x - 100) / 2 - 105, windowSize.y / 2 + 110);
 
     // Register button setup
-    registerButton.setSize(sf::Vector2f(100, 50));
-    registerButton.setPosition(670, 500);
+    registerButton.setSize(sf::Vector2f(150, 50));
+    registerButton.setPosition((windowSize.x - 100) / 2 +110, windowSize.y / 2 + 100);
     registerButton.setFillColor(sf::Color(70, 130, 180));
     registerButtonText.setFont(font);
     registerButtonText.setString("Register");
     registerButtonText.setCharacterSize(24);
     registerButtonText.setFillColor(sf::Color::White);
-    registerButtonText.setPosition(680, 510);
+    registerButtonText.setPosition((windowSize.x - 100) / 2 + 115, windowSize.y / 2 + 110);
 }
 
 void LoginUI::handleEvent(sf::Event& event, bool& isLoggedIn, bool& isRegistered) {
     if (event.type == sf::Event::MouseButtonPressed) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        usernameFocus = usernameField.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
-        passwordFocus = passwordField.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
 
+        // Username focus handling
+        usernameFocus = usernameField.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
+        if (usernameFocus && usernameInput.empty()) {
+            usernameText.setString(""); // Clear placeholder text
+        }
+        else if (!usernameFocus && usernameInput.empty()) {
+            usernameText.setString("Username");
+            usernameText.setFillColor(sf::Color(150, 150, 150)); // Reset to light color
+        }
+
+        // Password focus handling
+        passwordFocus = passwordField.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
+        if (passwordFocus && passwordInput.empty()) {
+            passwordText.setString(""); // Clear placeholder text
+        }
+        else if (!passwordFocus && passwordInput.empty()) {
+            passwordText.setString("Password");
+            passwordText.setFillColor(sf::Color(150, 150, 150)); // Reset to light color
+        }
+
+        // Handle Login and Register button clicks...
         if (loginButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos))) {
             if (!usernameInput.empty() && !passwordInput.empty()) {
                 LOGINDETAILS loginUserInfo{ usernameInput, passwordInput };
@@ -77,7 +124,9 @@ void LoginUI::handleEvent(sf::Event& event, bool& isLoggedIn, bool& isRegistered
             }
             else if (event.text.unicode < 128) {
                 usernameInput += static_cast<char>(event.text.unicode);
+                usernameText.setFillColor(sf::Color::Black); // Change color to active
             }
+            usernameText.setString(usernameInput.empty() ? "Username" : usernameInput);
         }
         else if (passwordFocus) {
             if (event.text.unicode == '\b') {
@@ -85,15 +134,15 @@ void LoginUI::handleEvent(sf::Event& event, bool& isLoggedIn, bool& isRegistered
             }
             else if (event.text.unicode < 128) {
                 passwordInput += static_cast<char>(event.text.unicode);
+                passwordText.setFillColor(sf::Color::Black); // Change color to active
             }
+            passwordText.setString(passwordInput.empty() ? "Password" : std::string(passwordInput.size(), '*'));
         }
     }
-
-    usernameText.setString(usernameInput);
-    passwordText.setString(std::string(passwordInput.size(), '*'));
 }
 
 void LoginUI::draw() {
+    window.draw(backgroundSprite);         // Draw background
     window.draw(usernameField);
     window.draw(passwordField);
     window.draw(usernameText);

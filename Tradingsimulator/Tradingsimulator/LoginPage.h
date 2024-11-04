@@ -23,6 +23,9 @@ private:
     sf::Text registerButtonText;
     sf::RectangleShape loginButton;
     sf::RectangleShape registerButton;
+    sf::Texture backgroundTexture;
+    sf::Sprite backgroundSprite;
+    sf::Text titleText;
 
     // Variables to hold input data and state
     std::string usernameInput;
